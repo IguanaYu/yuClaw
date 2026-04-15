@@ -1,0 +1,11 @@
+"""全局配置"""
+
+# GLM API 配置
+API_KEY = "你的API Key"
+BASE_URL = "https://open.bigmodel.cn/api/coding/paas/v4"
+MODEL_NAME = "GLM-4.6V"
+
+# Agent 配置
+MAX_ITERATIONS = 10
+TEMPERATURE = 0.7
+MAX_TOKENS = 4096
