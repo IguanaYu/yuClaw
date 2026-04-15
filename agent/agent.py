@@ -76,13 +76,19 @@ class Agent:
 
         for _ in range(MAX_ITERATIONS):
             response = self.model.chat(self.messages, tools=tool_schemas)
+            finish_reason = response["finish_reason"]
 
-            # 记录助手回复到消息历史
-            assistant_msg = {"role": "assistant", "content": response["content"]}
+            # 打印思考过程（调试用，不展示给用户）
+            if response.get("reasoning"):
+                print(f"\n[思考] {response['reasoning'][:200]}{'...' if len(response['reasoning']) > 200 else ''}")
 
-            if "tool_calls" in response:
-                # 有工具调用 → 执行工具并喂回模型
-                assistant_msg["tool_calls"] = response["tool_calls"]
+            if finish_reason == "tool_calls" and "tool_calls" in response:
+                # 模型要调用工具 → 执行并喂回
+                assistant_msg = {
+                    "role": "assistant",
+                    "content": response["content"],
+                    "tool_calls": response["tool_calls"],
+                }
                 self.messages.append(assistant_msg)
 
                 for tool_call in response["tool_calls"]:
@@ -105,10 +111,21 @@ class Agent:
                         "tool_call_id": tool_call.id,
                         "content": result,
                     })
-            else:
-                # 无工具调用 → 最终回复
-                self.messages.append(assistant_msg)
+
+            elif finish_reason == "stop":
+                # 模型认为回答完毕 → 返回最终回答
+                self.messages.append({"role": "assistant", "content": response["content"]})
                 return response["content"]
+
+            elif finish_reason == "length":
+                # token 不够了 → 返回已有内容
+                self.messages.append({"role": "assistant", "content": response["content"]})
+                return response["content"] + "\n\n（回答被截断，token 上限已用尽）"
+
+            else:
+                # 其他情况（如纯思考无行动）→ 记录并继续
+                self.messages.append({"role": "assistant", "content": response["content"]})
+                continue
 
         return "（已达到最大迭代次数，Agent 停止运行）"
 

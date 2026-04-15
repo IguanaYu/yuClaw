@@ -32,11 +32,19 @@ class GLMModel:
 
         response = self.client.chat.completions.create(**kwargs)
 
-        message = response.choices[0].message
-        # GLM 模型可能将回复放在 reasoning_content 或 content 中
-        content = getattr(message, "reasoning_content", None) or message.content or ""
+        choice = response.choices[0]
+        message = choice.message
 
-        result = {"role": "assistant", "content": content}
+        # 分离思考过程和正式回答
+        reasoning = getattr(message, "reasoning_content", None) or ""
+        content = message.content or ""
+
+        result = {
+            "role": "assistant",
+            "content": content,
+            "reasoning": reasoning,
+            "finish_reason": choice.finish_reason,
+        }
         if message.tool_calls:
             result["tool_calls"] = message.tool_calls
 
