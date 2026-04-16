@@ -8,6 +8,9 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from agent.agent import Agent
 from tools.bash_tool import BashTool
+from tools.file_tool import FileTool
+from tools.http_tool import HttpTool
+from tools.search_tool import SearchTool
 
 
 def main():
@@ -17,7 +20,7 @@ def main():
     print("=" * 50)
 
     # 初始化工具
-    tools = [BashTool()]
+    tools = [BashTool(), FileTool(), HttpTool(), SearchTool()]
 
     # 初始化 Agent
     agent = Agent(tools=tools)
