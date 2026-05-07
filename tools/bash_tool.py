@@ -25,6 +25,9 @@ class BashTool(BaseTool):
         "required": ["command"],
     }
 
+    def __init__(self, workspace: str = None):
+        super().__init__(workspace)
+
     def execute(self, command: str, timeout: int = 30) -> str:
         """执行 shell 命令
 
@@ -42,6 +45,9 @@ class BashTool(BaseTool):
                 capture_output=True,
                 text=True,
                 timeout=timeout,
+                cwd=self.workspace,
+                encoding='utf-8',
+                errors='replace',
             )
             output = ""
             if result.stdout:

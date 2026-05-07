@@ -31,8 +31,15 @@ class FileTool(BaseTool):
 
     MAX_READ_SIZE = 100 * 1024  # 100KB
 
+    def __init__(self, workspace: str = None):
+        super().__init__(workspace)
+
     def execute(self, operation: str, path: str, content: str = None) -> str:
         try:
+            # 相对路径基于 workspace 解析为绝对路径
+            if not os.path.isabs(path):
+                path = os.path.join(self.workspace, path)
+
             # 路径安全检查
             if ".." in os.path.normpath(path).split(os.sep):
                 return "错误：路径不允许包含 '..'"
